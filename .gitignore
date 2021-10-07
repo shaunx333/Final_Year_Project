@@ -1,0 +1,7 @@
+.idea/
+/venv/
+*.out
+.DS_Store/
+nohup.out
+*.pyc
+*.DS_Store
