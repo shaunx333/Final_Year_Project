@@ -1,25 +1,26 @@
 import os
+import re
+from urllib.parse import urlparse
 
 import joblib
 from django.http import JsonResponse
 from django.shortcuts import render
-from urllib.parse import urlparse, urlencode
-import ipaddress
-import re
-
-import pickle
 
 # 1.Checks for IP address in URL (Have_IP)
 from untitled1 import settings
 
 
+# 1.Checks for IP address in URL (Have_IP)
 def havingIP(url):
-    try:
-        ipaddress.ip_address(url)
-        ip = 1
-    except:
-        ip = 0
-    return ip
+    match = re.search(
+        '(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\/)|'
+        '((0x[0-9a-fA-F]{1,2})\\.(0x[0-9a-fA-F]{1,2})\\.(0x[0-9a-fA-F]{1,2})\\.(0x[0-9a-fA-F]{1,2})/)'
+        '(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}', url)
+
+    if match:
+        return 1
+    else:
+        return 0
 
 
 # 2.Checks the presence of @ in URL (Have_At)
@@ -31,47 +32,42 @@ def haveAtSign(url):
     return at
 
 
-# 3.Finding the length of URL and categorizing (URL_Length)
-def getLength(url):
-    if len(url) < 54:
-        length = 0
+# #3.Finding the length of URL and categorizing (URL_Length)
+# def getLength(url):
+#     if len(url) < 54:
+#         length = 0            
+#     else:
+#         length = 1  
+#     return length
+
+
+# 4.Finding the number of subdomains
+def getSub_domains(url):
+    if url.count(".") < 4:
+        return 0
     else:
-        length = 1
-    return length
+        return 1
+
+    # 5.Checking for redirection '//' in the url (Redirection)
 
 
-# 4.Gives number of '/' in URL (URL_Depth)
-def getDepth(url):
-    s = urlparse(url).path.split('/')
-    depth = 0
-    for j in range(len(s)):
-        if len(s[j]) != 0:
-            depth = depth + 1
-    return depth
-
-
-# 5.Checking for redirection '//' in the url (Redirection)
 def redirection(url):
-    pos = url.rfind('//')
-    if pos > 6:
-        if pos > 7:
-            return 1
-        else:
-            return 0
+    if "//" in urlparse(url).path:
+        return 1
     else:
         return 0
 
+    # 6.Existence of “HTTPS” Token in the Domain Part of the URL (https_Domain)
 
-# 6.Existence of “HTTPS” Token in the Domain Part of the URL (https_Domain)
+
 def httpDomain(url):
     domain = urlparse(url).netloc
-    if 'https' in domain:
+    if 'https' or 'http' in domain:
         return 1
     else:
         return 0
 
 
-# listing shortening services
 shortening_services = r"bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|tinyurl|tr\.im|is\.gd|cli\.gs|" \
                       r"yfrog\.com|migre\.me|ff\.im|tiny\.cc|url4\.eu|twit\.ac|su\.pr|twurl\.nl|snipurl\.com|" \
                       r"short\.to|BudURL\.com|ping\.fm|post\.ly|Just\.as|bkite\.com|snipr\.com|fic\.kr|loopt\.us|" \
@@ -103,8 +99,7 @@ def featureExtraction(url):
     features = []
     features.append(havingIP(url))
     features.append(haveAtSign(url))
-    features.append(getLength(url))
-    features.append(getDepth(url))
+    features.append(getSub_domains(url))
     features.append(redirection(url))
     features.append(httpDomain(url))
     features.append(tinyURL(url))
@@ -119,14 +114,14 @@ def index(request):
 def doNic(request):
     # feature = featureExtraction(request.POST.get("url"))
     url = request.POST.get("url")
-    #url = "https://www.google.co.in/search?q=sss&sxsrf=AOaemvKUwXcboAKdOtqlkbdi8CSFObuTfA%3A1633613007710&source=hp&ei=z_ReYYelKM7j-gTB7o7YDg&iflsig=ALs-wAMAAAAAYV8C37MEnbbxXmET-KLRsI-EbxP2b2UE&ved=0ahUKEwjHyJbYsrjzAhXOsZ4KHUG3A-sQ4dUDCAc&uact=5&oq=sss&gs_lcp=Cgdnd3Mtd2l6EAMyCAgAEIAEELEDMggILhCABBCxAzIICAAQsQMQgwEyCAgAEIAEELEDMggIABCABBCxAzIICAAQgAQQsQMyBQgAEIAEMgUIABCABDIRCC4QgAQQsQMQgwEQxwEQrwEyCAgAEIAEELEDOgQIIxAnOgUIABCRAjoLCAAQgAQQsQMQgwE6EQguEIAEELEDEIMBEMcBENEDOgUILhCABFCjC1iGD2DHEWgAcAB4AIABpgGIAbkDkgEDMC4zmAEAoAEB&sclient=gws-wiz"
+    # url = "https://www.google.co.in/search?q=sss&sxsrf=AOaemvKUwXcboAKdOtqlkbdi8CSFObuTfA%3A1633613007710&source=hp&ei=z_ReYYelKM7j-gTB7o7YDg&iflsig=ALs-wAMAAAAAYV8C37MEnbbxXmET-KLRsI-EbxP2b2UE&ved=0ahUKEwjHyJbYsrjzAhXOsZ4KHUG3A-sQ4dUDCAc&uact=5&oq=sss&gs_lcp=Cgdnd3Mtd2l6EAMyCAgAEIAEELEDMggILhCABBCxAzIICAAQsQMQgwEyCAgAEIAEELEDMggIABCABBCxAzIICAAQgAQQsQMyBQgAEIAEMgUIABCABDIRCC4QgAQQsQMQgwEQxwEQrwEyCAgAEIAEELEDOgQIIxAnOgUIABCRAjoLCAAQgAQQsQMQgwE6EQguEIAEELEDEIMBEMcBENEDOgUILhCABFCjC1iGD2DHEWgAcAB4AIABpgGIAbkDkgEDMC4zmAEAoAEB&sclient=gws-wiz"
     feat = []
     feature = featureExtraction(url)
     feat.append(feature)
-    ml = joblib.load(os.path.join(settings.BASE_DIR, 'Rf_Model.pkl'))
+    ml = joblib.load(os.path.join(settings.BASE_DIR, 'RandomForrest_Model_report_demo.pkl'))
     predValue = ml.predict(feat)
 
-    print("Analyzing page "+url)
+    print("Analyzing page " + url)
     print(feat)
     print(predValue[0])
     if predValue[0] == 0:
