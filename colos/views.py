@@ -118,13 +118,15 @@ def index(request):
 
 def doNic(request):
     # feature = featureExtraction(request.POST.get("url"))
-    url = "https://www.google.co.in/search?q=sss&sxsrf=AOaemvKUwXcboAKdOtqlkbdi8CSFObuTfA%3A1633613007710&source=hp&ei=z_ReYYelKM7j-gTB7o7YDg&iflsig=ALs-wAMAAAAAYV8C37MEnbbxXmET-KLRsI-EbxP2b2UE&ved=0ahUKEwjHyJbYsrjzAhXOsZ4KHUG3A-sQ4dUDCAc&uact=5&oq=sss&gs_lcp=Cgdnd3Mtd2l6EAMyCAgAEIAEELEDMggILhCABBCxAzIICAAQsQMQgwEyCAgAEIAEELEDMggIABCABBCxAzIICAAQgAQQsQMyBQgAEIAEMgUIABCABDIRCC4QgAQQsQMQgwEQxwEQrwEyCAgAEIAEELEDOgQIIxAnOgUIABCRAjoLCAAQgAQQsQMQgwE6EQguEIAEELEDEIMBEMcBENEDOgUILhCABFCjC1iGD2DHEWgAcAB4AIABpgGIAbkDkgEDMC4zmAEAoAEB&sclient=gws-wiz"
+    url = request.POST.get("url")
+    #url = "https://www.google.co.in/search?q=sss&sxsrf=AOaemvKUwXcboAKdOtqlkbdi8CSFObuTfA%3A1633613007710&source=hp&ei=z_ReYYelKM7j-gTB7o7YDg&iflsig=ALs-wAMAAAAAYV8C37MEnbbxXmET-KLRsI-EbxP2b2UE&ved=0ahUKEwjHyJbYsrjzAhXOsZ4KHUG3A-sQ4dUDCAc&uact=5&oq=sss&gs_lcp=Cgdnd3Mtd2l6EAMyCAgAEIAEELEDMggILhCABBCxAzIICAAQsQMQgwEyCAgAEIAEELEDMggIABCABBCxAzIICAAQgAQQsQMyBQgAEIAEMgUIABCABDIRCC4QgAQQsQMQgwEQxwEQrwEyCAgAEIAEELEDOgQIIxAnOgUIABCRAjoLCAAQgAQQsQMQgwE6EQguEIAEELEDEIMBEMcBENEDOgUILhCABFCjC1iGD2DHEWgAcAB4AIABpgGIAbkDkgEDMC4zmAEAoAEB&sclient=gws-wiz"
     feat = []
     feature = featureExtraction(url)
     feat.append(feature)
     ml = joblib.load(os.path.join(settings.BASE_DIR, 'Rf_Model.pkl'))
     predValue = ml.predict(feat)
 
+    print("Analyzing page "+url)
     print(feat)
     print(predValue[0])
     if predValue[0] == 0:

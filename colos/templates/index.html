@@ -36,22 +36,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/pixel-operator" type="text/css"/>
-
-
-    <script>
-	//GAWD AJAX here to rescue
-          function analyzeText(text){
-            $.ajax({
-                type: "GET",
-                url: '{{ 'test/' }}',
-            });
-        }
-
-
-    </script>
 </head>
 <body>
-<button id="nice" onclick="doThis()">Analyze this page</button>
+<label for="inpUrl">Enter URL</label>
+<input id="inpUrl"><br>
+<button id="nice" onclick="doThis()">Analyze this page</button><br><br>
+<span id="resultText"></span><br>
+<span id="resultUrl" style="font-size: 12px"></span>
 </body>
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -76,14 +67,19 @@
                 url: '{{ 'doNic/' }}',
                 data: {
                 csrfmiddlewaretoken: '{{ csrf_token }}',
-                url: window.location.href
+                //url: window.location.href
+                url: $("#inpUrl").val()
                 },
                 success: function (response) {
                     if(response["valid"]){
-                    $("#nice").html('Safe')
+                    $("#resultText").html('Safe')
+                    $("#resultUrl").html($("#inpUrl").val())
+                    $("#inpUrl").val('')
                         console.log("Legit site")
                     } else {
-                    $("#nice").html('Unafe')
+                    $("#resultText").html('Unsafe')
+                    $("#resultUrl").html($("#inpUrl").val())
+                    $("#inpUrl").val('')
                         console.log("Not legit site")
                     }
                 }
